@@ -39,7 +39,6 @@ RUN apk update && apk add \
     libxml2-utils \
     # snmp-mibs-downloader \
     openssh-client \
-    openssh-server \
     ttf-dejavu \
     graphviz \
     vim \
@@ -67,8 +66,10 @@ RUN cpanm -l /usr -n PDF::API2
 # setup default user
 RUN addgroup -S lpar2rrd 
 RUN adduser -S lpar2rrd -G lpar2rrd -s /bin/bash
-RUN echo 'lpar2rrd:xorux4you' | chpasswd
 RUN echo '%lpar2rrd ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers
+RUN apk add linux-pam \
+	&& echo '@lpar2rrd soft stack 524288' >> /etc/security/limits.conf \
+	&& echo '@lpar2rrd hard stack 524288' >> /etc/security/limits.conf
 
 # configure Apache
 COPY configs/apache2 /etc/apache2/sites-available
@@ -78,13 +79,13 @@ COPY configs/apache2/htpasswd /etc/apache2/conf/
 RUN sed -i 's/^User apache/User lpar2rrd/g' /etc/apache2/httpd.conf
 
 # add product installations
-ENV LPAR_VER_MAJ "7.10"
-ENV LPAR_VER_MIN "-1"
+ENV LPAR_VER_MAJ "7.20"
+ENV LPAR_VER_MIN ""
 
 ENV LPAR_VER "$LPAR_VER_MAJ$LPAR_VER_MIN"
 
-# expose ports for SSH, HTTP, HTTPS and LPAR2RRD daemon
-EXPOSE 22 80 443 8162
+# expose ports for HTTP, HTTPS and LPAR2RRD daemon
+EXPOSE 80 443 8162
 
 COPY configs/crontab /var/spool/cron/crontabs/lpar2rrd
 RUN chmod 640 /var/spool/cron/crontabs/lpar2rrd && chown lpar2rrd.cron /var/spool/cron/crontabs/lpar2rrd
@@ -94,7 +95,7 @@ RUN chmod 640 /var/spool/cron/crontabs/lpar2rrd && chown lpar2rrd.cron /var/spoo
 # ADD http://downloads.sourceforge.net/project/stor2rrd/stor2rrd/$STOR_SF_DIR/stor2rrd-$STOR_VER.tar /home/stor2rrd/
 
 # download tarballs from official website
-ADD https://lpar2rrd.com/download-static/lpar2rrd-$LPAR_VER.tar /tmp/
+ADD https://www.lpar2rrd.com/download-static/lpar2rrd-$LPAR_VER.tar /tmp/
 
 # extract tarballs
 WORKDIR /tmp
@@ -106,6 +107,11 @@ RUN chmod +x /startup.sh
 
 #RUN mkdir -p /home/lpar2rrd/lpar2rrd/data
 #RUN mkdir -p /home/lpar2rrd/lpar2rrd/etc
+
+RUN ln -s /etc/apache2/sites-available/*.conf /etc/apache2/conf.d/
+RUN echo -e "<IfModule !mpm_prefork_module>\n LoadModule cgid_module modules/mod_cgid.so\n</IfModule>\n<IfModule mpm_prefork_module>\n LoadModule cgi_module modules/mod_cgi.so\n</IfModule>" > /etc/apache2/conf.d/mod_cgi.conf
+# RRDp module not found, move it
+RUN mv /usr/share/vendor_perl/RRDp.pm  /usr/share/perl5/vendor_perl/
 
 VOLUME [ "/home/lpar2rrd" ]
 

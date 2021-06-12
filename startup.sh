@@ -10,23 +10,6 @@ if [ -f /firstrun ]; then
 
 	echo "Running for first time.. need to configure..."
 
-	ln -s /etc/apache2/sites-available/*.conf /etc/apache2/conf.d/
-
-	cat <<EOF > /etc/apache2/conf.d/mod_cgi.conf
-<IfModule !mpm_prefork_module>
-  LoadModule cgid_module modules/mod_cgid.so
-</IfModule>
-  <IfModule mpm_prefork_module>
-  LoadModule cgi_module modules/mod_cgi.so
-</IfModule>
-EOF
-
-	# RRDp module not found, move it
-	mv /usr/share/vendor_perl/RRDp.pm  /usr/share/perl5/vendor_perl/
-            
-        # Generate Host keys
-	ssh-keygen -A
-
 	# setup products
         if [ -f "/home/lpar2rrd/lpar2rrd/etc/lpar2rrd.cfg" ]; then
             # spoof files to force update, not install
