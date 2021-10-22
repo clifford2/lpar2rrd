@@ -2,7 +2,8 @@
 #
 # VERSION               1.0
 
-FROM       alpine:latest
+# Clifford: latest (3.14.2 as of 2021-10-22) doesn't build on ppc64le - PDF::API2 error
+FROM       alpine:3.13.6
 MAINTAINER jirka@dutka.net
 
 ENV HOSTNAME XoruX
