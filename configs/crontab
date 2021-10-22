@@ -46,4 +46,5 @@
 # RedHat OpenShift support   
 0,20,40 * * * *  /home/lpar2rrd/lpar2rrd/load_openshift.sh > /home/lpar2rrd/lpar2rrd/load_openshift.out 2>&1 
 
-
+# CloudStack support   
+0,20,40 * * * *  /home/lpar2rrd/lpar2rrd/load_cloudstack.sh > /home/lpar2rrd/lpar2rrd/load_cloudstack.out 2>&1 

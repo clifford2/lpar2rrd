@@ -4,10 +4,8 @@ This is dockerized version of single [XoruX](https://www.xorux.com) application 
 
 *Cloned from <https://github.com/XoruX/lpar2rrd>, and modified as follows:*
 
-- Removed `sshd`: Access the container with `docker exec` instead.
-- No password set for `lpar2rrd` user
 - Increased stack limit
-- Some one off config steps moved from `startup.sh` to `Dockerfile`
+- Moved some one off config steps from `startup.sh` to `Dockerfile`
 - Built images for **ppc64le** systems are available at <https://hub.docker.com/repository/docker/cliffordw/lpar2rrd>
 
 It's based on the latest official [Alpine Linux](https://hub.docker.com/_/alpine) with all necessary dependencies installed.
@@ -25,5 +23,3 @@ If you want to use this container as a XorMon backend, set XORMON env variable:
     docker run -d --name LPAR2RRD --restart always -v lpar2rrd:/home/lpar2rrd -e XORMON=1 xorux/lpar2rrd
 
 Application UI can be found on `http://<CONTAINER_IP>`, use admin/admin for login.
-
-You can connect via SSH on port 22 (exposed), username **lpar2rrd**, password **xorux4you** - please change it ASAP.
