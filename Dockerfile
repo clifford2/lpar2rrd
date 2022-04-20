@@ -2,8 +2,8 @@
 #
 # VERSION               1.0
 
-# Clifford: latest (3.14.2 as of 2021-10-22) doesn't build on ppc64le - PDF::API2 error
-FROM       alpine:3.13.6
+# Clifford: latest (3.15.4 as of 2022-04-05), and previously 3.14.2, doesn't build on ppc64le - PDF::API2 error
+FROM       alpine:3.13.10
 MAINTAINER jirka@dutka.net
 
 ENV HOSTNAME XoruX
@@ -88,7 +88,7 @@ RUN sed -i 's/^User apache/User lpar2rrd/g' /etc/apache2/httpd.conf
 RUN sed -i '/mod_status.so/ s/^#*/#/' /etc/apache2/httpd.conf
 
 # add product installations
-ENV LPAR_VER_MAJ "7.30"
+ENV LPAR_VER_MAJ "7.40"
 ENV LPAR_VER_MIN ""
 
 ENV LPAR_VER "$LPAR_VER_MAJ$LPAR_VER_MIN"
@@ -104,14 +104,15 @@ RUN chmod 640 /var/spool/cron/crontabs/lpar2rrd && chown lpar2rrd.cron /var/spoo
 # ADD http://downloads.sourceforge.net/project/stor2rrd/stor2rrd/$STOR_SF_DIR/stor2rrd-$STOR_VER.tar /home/stor2rrd/
 
 # download tarballs from official website
-ADD https://lpar2rrd.com/download-static/lpar2rrd-$LPAR_VER.tar /tmp/
+ADD https://www.lpar2rrd.com/download-static/lpar2rrd/lpar2rrd-$LPAR_VER.tar /tmp/
 RUN mkdir -p /opt/lpar2rrd-agent
-ADD https://lpar2rrd.com/agent/lpar2rrd-agent.pl.gz /opt/lpar2rrd-agent/
+ADD https://www.lpar2rrd.com/agent/lpar2rrd-agent-${LPAR_VER}-0.noarch.rpm /opt/lpar2rrd-agent/
 
-# extract tarballs
+# extract /opt/lpar2rrd-agent/lpar2rrd-agent.pl
+RUN apk add rpm2cpio && cd / && rpm2cpio /opt/lpar2rrd-agent/lpar2rrd-agent-7.40-0.noarch.rpm | cpio -idmv
+# extract lpar2rrd tarball
 WORKDIR /tmp
 RUN tar xvf lpar2rrd-$LPAR_VER.tar
-RUN gunzip /opt/lpar2rrd-agent/lpar2rrd-agent.pl.gz && chmod +r /opt/lpar2rrd-agent/lpar2rrd-agent.pl
 
 COPY supervisord.conf /etc/
 COPY startup.sh /startup.sh
